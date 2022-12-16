@@ -94,10 +94,22 @@ const updateProfile = async (req, res) => {
     }
 }
 
+const deleteUserProfile = async (req, res) => {
+    const id = req.params.id;
+    try {
+        await userModel.deleteUser(id);
+        response(res, null, 'sucess', 200, 'Delete data sucess');
+    } catch (error) {
+        console.log(error);
+        res.send({message: `Delete data user failed`});
+    }
+}
+
 module.exports = {
     getAllUser,
     getProfile,
     register,
     loginUser,
-    updateProfile
+    updateProfile,
+    deleteUserProfile
 }
