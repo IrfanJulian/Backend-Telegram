@@ -69,10 +69,10 @@ const loginUser = async (req, res) => {
 }
 
 const getProfile = async (req, res) => {
-    const id = req.params.id;
+    const id = req.payload.id;
     try {
-        const result = userModel.getIdUser(id);
-        response(res, result, 'sucess', 200, 'Get Profile User Sucess');
+        const {rows} = await userModel.getIdUser(id);
+        response(res, rows, 'sucess', 200, 'Get Profile User Sucess');
     } catch (error) {
         console.log(error);
         res.json({message: 'Get Profile User Failed'});
@@ -80,14 +80,13 @@ const getProfile = async (req, res) => {
 }
 
 const updateProfile = async (req, res) => {
-    const id = req.params.id;
+    const id = req.payload.id;
     const { name, email, password, phone } = req.body;
     const photo = req.file;
     const image = await cloudinary.uploader.upload(photo.path, { folder: 'Telegram/Users' });
     const dataUser = { id, name, email, password, phone, photo: image.secure_url };
     try {
         const {data} = await userModel.updateProfile(dataUser);
-        console.log(result);
         response(res, data, 'sucess', 200, 'Update data user sucess');
     } catch (error) {
         console.log(error);

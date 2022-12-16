@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const { response } = require('../helpers/common')
 // eslint-disable-next-line no-undef
-let key = process.env.JWT_KEY
+let key = process.env.JWT
 
 const protect = (req,res,next) => {
     try {

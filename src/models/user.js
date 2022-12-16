@@ -19,7 +19,7 @@ const registerUser = (data) => {
 
 const updateProfile = (data) => {
     const { id, name, email, password, phone, photo } = data;
-    return pool.query(`UPDATE users SET name='${name}', email='${email}, password='${password}, phone='${phone}, photo='${photo} WHERE id='${id}`)
+    return pool.query(`UPDATE users SET name='${name}', email='${email}', password='${password}', phone='${phone}', photo='${photo}' WHERE id='${id}'`)
 }
 
 module.exports = {
