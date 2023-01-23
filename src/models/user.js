@@ -1,7 +1,7 @@
 const pool = require('../configs/db')
 
-const getUser = () => {
-    return pool.query(`SELECT * FROM users`);
+const getUser = (id) => {
+    return pool.query(`SELECT * FROM users WHERE id <> '${id}'`);
 }
 
 const getEmailUser = (email) =>{
@@ -13,13 +13,13 @@ const getIdUser = (id) => {
 }
 
 const registerUser = (data) => {
-    const { id, name, email, password } = data;
-    return pool.query(`INSERT INTO users(id,name,email,password)VALUES('${id}','${name}','${email}','${password}')`);
+    const { id, username, email, password } = data;
+    return pool.query(`INSERT INTO users(id,username,email,password)VALUES('${id}','${username}','${email}','${password}')`);
 }
 
 const updateProfile = (data) => {
-    const { id, name, email, password, phone, photo } = data;
-    return pool.query(`UPDATE users SET name='${name}', email='${email}', password='${password}', phone='${phone}', photo='${photo}' WHERE id='${id}'`);
+    const { id, photo } = data;
+    return pool.query(`UPDATE users SET photo='${photo}' WHERE id='${id}'`);
 }
 
 const deleteUser = (id) => {

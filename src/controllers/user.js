@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const userModel = require('../models/user');
+require('dotenv').config();
 const { response } = require('../helpers/common');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
@@ -16,7 +17,8 @@ cloudinary.config({
 
 const getAllUser = async (req,res) => {
     try {
-        const {rows} = await userModel.getUser();
+        const idUser = req.decoded.id
+        const {rows} = await userModel.getUser(idUser);
         response(res, rows, 'sucess', 200, 'Get data user sucess');
     } catch (error) {
         console.log(error);
@@ -25,12 +27,13 @@ const getAllUser = async (req,res) => {
 }
 
 const register = async (req, res) => {
-    const { name, email, password  } = req.body;
+    const { username, email, password  } = req.body;
+    console.log(req.body);
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(password, salt);
     try {
         const filterEmail = await userModel.getEmailUser(email);
-        const dataUser = { id: uuidv4(), name, email, password: passwordHash };
+        const dataUser = { id: uuidv4(), username, email, password: passwordHash };
         console.log('data user = ', dataUser);
         if(!filterEmail.rowCount){
             const {data} = await userModel.registerUser(dataUser);
@@ -69,7 +72,7 @@ const loginUser = async (req, res) => {
 }
 
 const getProfile = async (req, res) => {
-    const id = req.payload.id;
+    const id = req.params.id;
     try {
         const {rows} = await userModel.getIdUser(id);
         response(res, rows, 'sucess', 200, 'Get Profile User Sucess');
@@ -79,12 +82,11 @@ const getProfile = async (req, res) => {
     }
 }
 
-const updateProfile = async (req, res) => {
-    const id = req.payload.id;
-    const { name, email, password, phone } = req.body;
+const updateProfile = async(req, res) => {
+    const id = req.params.id;
     const photo = req.file;
     const image = await cloudinary.uploader.upload(photo.path, { folder: 'Telegram/Users' });
-    const dataUser = { id, name, email, password, phone, photo: image.secure_url };
+    const dataUser = { id, photo: image.secure_url };
     try {
         const {data} = await userModel.updateProfile(dataUser);
         response(res, data, 'sucess', 200, 'Update data user sucess');

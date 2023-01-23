@@ -1,27 +1,125 @@
-const express = require('express');
-require('dotenv').config();
-const morgan = require('morgan');
+/* eslint-disable no-undef */
+require('dotenv').config()
+const express = require("express");
+const jwt = require('jsonwebtoken')
+const {Server} = require('socket.io')
+const http = require('http')
+const app = express();
+const httpServer = http.createServer(app);
 const helmet = require('helmet');
 const xss = require('xss-clean');
-const cors = require('cors');
-const myCors = require('./src/middlewares/cors');
-const app = express();
-const mainRouter = require('./src/routes/index');
-// eslint-disable-next-line no-undef
-const PORT = process.env.PORT || 4000;
+const morgan = require('morgan');
+const cors = require('cors')
+const mainRouter = require('./src/routes/index')
+const PORT = 7878
+const chatModel = require('./src/models/chat')
+const moment = require('moment')
+moment.locale('id'); 
 
 app.use(express.json());
-app.use(express.urlencoded({extend: true}))
+app.use(express.urlencoded({extended: false}))
 app.use(helmet());
+app.use(cors())
 app.use(xss());
 app.use(morgan('dev'));
-app.use(cors(myCors));
+// app.use(cors(myCors));
 app.use('/', mainRouter);
+
+const io = new Server(httpServer,{
+    cors: {
+        origin: `http://localhost:3000`
+    }
+})
+
+io.use((socket, next)=>{
+    const token = socket.handshake.query.token;
+    jwt.verify(token, process.env.JWT, function(error, decoded){
+        if(error){
+            if(error && error.name == 'JsonWebTokenError'){
+                return response(res, null, 'failed', 404, 'Invalid Token')
+            } else if (error && error.name == 'TokenExpriredError'){
+                return response(res, null, 'failed', 404, 'Token Expired')
+            } else {
+                return response(res, null, 'failed', 404, 'Invalid Token')
+            }
+        }
+        socket.idUser = decoded.id;
+        socket.join(decoded.id);
+        next();
+    });
+})
+
+io.on(`connection`, (socket)=>{
+    // console.log(`device connect id ${socket.id}`);
+    socket.on(`msg`, ({idReciever, messageSend}, callback)=>{
+        const message = {reciever: idReciever, message: messageSend, sender: socket.idUser, date: new Date()}
+        callback({...message, date: moment(message.date).format('LT')})
+        chatModel.insert(message)
+        .then(()=>{
+            socket.broadcast.to(idReciever).emit('newMsg', message)
+        })
+        .catch((err)=>{
+            console.log(err);
+        })
+        // console.log(message);
+    })
+    socket.on(`disconnect`, ()=>{
+        // console.log(`device disconnect id ${socket.idUser}`);
+    })
+
+    socket.on('initRoom', ({room, username})=>{
+        // console.log(room)
+        socket.join(`room:${room}`)
+        io.to(`room:${room}`).emit('notif', {
+            sender: `admin`,
+            message: `${username} bergabung dalam group`,
+            date: new Date().getHours()+':'+new Date().getMinutes()
+        })
+    })
+
+    socket.on('msgGroup', ({room, sender, message})=>{
+        io.to(`room:${room}`).emit('newMsgGroup', {
+            sender: sender,
+            message: message,
+            date: new Date().getHours()+':'+new Date().getMinutes()
+        })
+    })
+
+})
 
 app.all('*', (req, res) => {
     res.status(404).json({message: 'Server Not Found'})
 });
 
-app.listen(PORT, () => {
-    console.log(`Server Running On Port ${PORT}`);
+httpServer.listen(PORT, ()=>{
+    console.log(`app running on ${PORT}`)
 });
+
+// io.on(`connection`, (socket)=>{
+//     console.log(`device connect id ${socket.id}`);
+//     socket.on(`msg`, ({ idSocket, sendChat })=>{
+//         socket.broadcast.to(idSocket).emit(`msgBE`, {message: sendChat, date: new Date()})
+//     })
+//     socket.on(`disconnect`, ()=>{
+//         console.log(`device disconnect id ${socket.id}`);
+//     })
+
+//     socket.on('initRoom', ({room, username})=>{
+//         console.log(room)
+//         socket.join(`room:${room}`)
+//         io.to(`room:${room}`).emit('notif', {
+//             sender: `admin`,
+//             message: `${username} bergabung dalam group`,
+//             date: new Date().getHours()+':'+new Date().getMinutes()
+//         })
+//     })
+
+//     socket.on('msgGroup', ({room, sender, message})=>{
+//         io.to(`room:${room}`).emit('newMsgGroup', {
+//             sender: sender,
+//             message: message,
+//             date: new Date().getHours()+':'+new Date().getMinutes()
+//         })
+//     })
+
+// })

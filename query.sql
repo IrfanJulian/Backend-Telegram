@@ -1,4 +1,3 @@
-CREATE TABLE users(id VARCHAR PRIMARY KEY, name VARCHAR, email VARCHAR, password VARCHAR, phone INT DEFAULT 0, photo VARCHAR, message VARCHAR);
-
-CREATE TABLE group(id SERIAL PRIMARY KEY, name VARCHAR DEFAULT'', participants VARCHAR DEFAULT'', message VARCHAR DEFAULT'');
-
+CREATE TABLE chat(id SERIAL PRIMARY KEY, sender TEXT, reciever TEXT, message TEXT, date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, photo TEXT DEFAULT '');
+CREATE TABLE status(satusid SERIAL PRIMARY KEY, statusname TEXT, statusdescription TEXT);
+CREATE TABLE friend(userid SERIAL PRIMARY KEY, friendid INTEGER);

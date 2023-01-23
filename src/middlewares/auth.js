@@ -9,8 +9,8 @@ const protect = (req,res,next) => {
         if(req.headers.authorization){
             let auth = req.headers.authorization
             token = auth.split(' ')[1]
-            let decode = jwt.verify(token, key)
-            req.payload = decode
+            let payload = jwt.verify(token, key)
+            req.decoded = payload
             next()
         } else {
             return response(res, null, 'failed', 404, 'Server Need Token')
