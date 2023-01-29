@@ -27,7 +27,7 @@ app.use('/', mainRouter);
 
 const io = new Server(httpServer,{
     cors: {
-        origin: `https://funtalks.netlify.app`
+        origin: [`https://funtalks.netlify.app`, `http://localhost:3000`]
     }
 })
 
