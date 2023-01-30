@@ -22,12 +22,11 @@ app.use(helmet());
 app.use(cors())
 app.use(xss());
 app.use(morgan('dev'));
-// app.use(cors(myCors));
 app.use('/', mainRouter);
 
 const io = new Server(httpServer,{
     cors: {
-        origin: `https://funtalks.netlify.app`
+        origin: [`https://funtalks.netlify.app`, `http://localhost:3000`]
     }
 })
 
@@ -94,32 +93,3 @@ app.all('*', (req, res) => {
 httpServer.listen(PORT, ()=>{
     console.log(`app running on ${PORT}`)
 });
-
-// io.on(`connection`, (socket)=>{
-//     console.log(`device connect id ${socket.id}`);
-//     socket.on(`msg`, ({ idSocket, sendChat })=>{
-//         socket.broadcast.to(idSocket).emit(`msgBE`, {message: sendChat, date: new Date()})
-//     })
-//     socket.on(`disconnect`, ()=>{
-//         console.log(`device disconnect id ${socket.id}`);
-//     })
-
-//     socket.on('initRoom', ({room, username})=>{
-//         console.log(room)
-//         socket.join(`room:${room}`)
-//         io.to(`room:${room}`).emit('notif', {
-//             sender: `admin`,
-//             message: `${username} bergabung dalam group`,
-//             date: new Date().getHours()+':'+new Date().getMinutes()
-//         })
-//     })
-
-//     socket.on('msgGroup', ({room, sender, message})=>{
-//         io.to(`room:${room}`).emit('newMsgGroup', {
-//             sender: sender,
-//             message: message,
-//             date: new Date().getHours()+':'+new Date().getMinutes()
-//         })
-//     })
-
-// })
